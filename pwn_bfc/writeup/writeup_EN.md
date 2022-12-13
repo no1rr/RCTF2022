@@ -35,7 +35,7 @@ My approach is to add the pointer to 0x400 first, and use the `?` option to prev
 
 Then add the pointer to 0x1000. At this time the 0x1010 chunk(chunk A) is in unsorted bin, and the 0x810(chunk B) one is in large bin.
 
-![image-20221212190816161](./img/image-20221212190816161-1670862058768.png)
+![image-20221212190816161](./img/image-20221212190816161.png)
 
 Forge a chunk of size 0x800 in chunk A.
 
@@ -45,11 +45,11 @@ Forge an `_IO_wide_data` structure, and also set the relevant fields including `
 
 Add the pointer to 0x2000 to trigger large bin attack then `stderr` is changed to the address of chunk A.
 
-![image-20221212211613592](cimage-20221212211613592-1670862369897.png)
+![image-20221212211613592](./img/image-20221212211613592.png)
 
 Finally, modify the A bit of the size field of chunk A and use large bin attack again. The program will trigger` __malloc_assert` because the check in malloc.c:4105 cannot pass, and finally call `system("sh")`
 
-![image-20221212211848111](./img/image-20221212211848111-1670864232453.png)
+![image-20221212211848111](./img/image-20221212211848111.png)
 
 
 
