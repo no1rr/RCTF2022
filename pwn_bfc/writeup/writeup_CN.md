@@ -21,13 +21,13 @@ pwndbg> x/32xi 0x7ffff7fba000
 
 3.利用`__malloc_assert`触发IO流
 
-##### 泄露heap和libc
+#### 泄露heap和libc
 
 数据指针加到0x10以后，tcache中会有chunk，把指针减到对应负数就可以泄露heap地址。
 
 指针加到0x800时，之前使用的0x810大小的chunk会被放到unsorted bin中，同样可以泄露libc
 
-##### large bin attack
+#### large bin attack
 
 与普通的large bin attack 不同的是，每次malloc的chunk大小都是之前的2倍，而large bin attack所需要的两个chunk，必须是在同一组大小（例如0x800,0x810），所以需要伪造unsorted bin chunk的大小。
 
@@ -35,7 +35,7 @@ pwndbg> x/32xi 0x7ffff7fba000
 
 再加到0x1000，这时的bin，在unsorted bin（chunk A）中的是0x1010大小，large bin 中是0x810（chunk B)。
 
-![image-20221212190816161](./img/image-20221212190816161.png)
+![image-20221212190816161](.\img\image-20221212190816161.png)
 
 在chunk A中伪造一个0x800大小的chunk，
 
@@ -43,25 +43,17 @@ pwndbg> x/32xi 0x7ffff7fba000
 
 指针加到0x2000，触发large bin attack，stderr被修改为chunk A的地址，
 
-![image-20221212211613592](./img/image-20221212211613592.png)
+![image-20221212211613592](.\img\image-20221212211613592.png)
 
 最后修改chunk A的size的A位，再次使用large bin attack，程序会因为malloc.c:4105的check过不了而触发__malloc_assert，最终调用`system("sh")`
 
-![image-20221212211848111](./img/image-20221212211848111.png)
+![image-20221212211848111](.\img\image-20221212211848111.png)
 
 
 
-##### trick
+#### trick
 
 使用 ` ,[>>>>>>>>,]`类似格式的代码来实现无限制读写以及指针加减，这种做法可能会改变chunk的一些字段，注意修改就行。
-
-
-
-##### 赛后
-
-赛后了解到一种思路是利用越界写去修改tcache的entries和counts从而实现任意地址申请，但是这样做只能申请一次，之后会因为malloc的check过不了而无法申请。
-
-其实最开始bss段上的结构体我是放在mmap的内存上的，之后考虑到了这个思路就放到bss上了，也把mmap的内存权限改为只能执行。
 
 
 
@@ -271,3 +263,8 @@ if __name__ == "__main__":
     main()
 ```
 
+
+
+### 非预期
+
+https://github.com/nobodyisnobody/write-ups/tree/main/RCTF.2022/pwn/bfc

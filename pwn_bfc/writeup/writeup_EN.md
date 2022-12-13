@@ -21,13 +21,13 @@ pwndbg> x/32xi 0x7ffff7fba000
 
 3. Use `__malloc_assert` to trigger IO stream
 
-##### leak heap and libc
+#### leak heap and libc
 
 After the data pointer is added to 0x10, there will be a chunk in tcache, and the heap address can be leaked by reducing the pointer to the corresponding negative number.
 
 When the data pointer is added to 0x800, the previously used 0x810 size chunk will be placed in the unsorted bin, which can also leak libc.
 
-##### large bin attack
+#### large bin attack
 
 The size of the chunk to be malloced each time is twice the size of the previous one. But the two chunks required by the large bin attack must be in the same group size (for example, 0x800, 0x810), so we need to forged the size of the unsorted bin chunk.
 
@@ -35,7 +35,7 @@ My approach is to add the pointer to 0x400 first, and use the `?` option to prev
 
 Then add the pointer to 0x1000. At this time the 0x1010 chunk(chunk A) is in unsorted bin, and the 0x810(chunk B) one is in large bin.
 
-![image-20221212190816161](./img/image-20221212190816161.png)
+![image-20221212190816161](E:\TyporaImages\image-20221212190816161-1670862058768.png)
 
 Forge a chunk of size 0x800 in chunk A.
 
@@ -45,25 +45,17 @@ Forge an `_IO_wide_data` structure, and also set the relevant fields including `
 
 Add the pointer to 0x2000 to trigger large bin attack then `stderr` is changed to the address of chunk A.
 
-![image-20221212211613592](./img/image-20221212211613592.png)
+![image-20221212211613592](E:\TyporaImages\image-20221212211613592-1670862369897.png)
 
 Finally, modify the A bit of the size field of chunk A and use large bin attack again. The program will trigger` __malloc_assert` because the check in malloc.c:4105 cannot pass, and finally call `system("sh")`
 
-![image-20221212211848111](./img/image-20221212211848111.png)
+![image-20221212211848111](E:\TyporaImages\image-20221212211848111-1670864232453.png)
 
 
 
-##### trick 
+#### trick 
 
 Use ` ,[>>>>>>>>,]` similar format code to achieve unlimited reading and writing and pointer addition and subtraction. This approach may change some fields of the chunk, just pay attention to the modification.
-
-##### after contest 
-
-After the game, I learned that one idea is to use out-of-bounds writes to modify the entries and counts of tcache so as to malloc a chunk at Arbitrary address. But this can only malloc once, and then it will lead to malloc error because of some checks in `_int_malloc`.
-
-Actually, I put the structure on the bss segment at the beginning of mmaped memory at first. After considering this idea, I put it to bss segment and changed the permission of mmaped memory to only executable.
-
-
 
 ### script
 
@@ -271,3 +263,8 @@ if __name__ == "__main__":
     main()
 ```
 
+
+
+### unexpected solution
+
+https://github.com/nobodyisnobody/write-ups/tree/main/RCTF.2022/pwn/bfc
