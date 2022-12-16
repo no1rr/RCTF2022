@@ -35,7 +35,7 @@ pwndbg> x/32xi 0x7ffff7fba000
 
 再加到0x1000，这时的bin，在unsorted bin（chunk A）中的是0x1010大小，large bin 中是0x810（chunk B)。
 
-![image-20221212190816161](.\img\image-20221212190816161.png)
+![image-20221212190816161](./img/image-20221212190816161.png)
 
 在chunk A中伪造一个0x800大小的chunk，
 
@@ -43,11 +43,11 @@ pwndbg> x/32xi 0x7ffff7fba000
 
 指针加到0x2000，触发large bin attack，stderr被修改为chunk A的地址，
 
-![image-20221212211613592](.\img\image-20221212211613592.png)
+![image-20221212211613592](./img/image-20221212211613592.png)
 
 最后修改chunk A的size的A位，再次使用large bin attack，程序会因为malloc.c:4105的check过不了而触发__malloc_assert，最终调用`system("sh")`
 
-![image-20221212211848111](.\img\image-20221212211848111.png)
+![image-20221212211848111](./img/image-20221212211848111.png)
 
 
 
